@@ -1,39 +1,640 @@
-<!doctype html> <html lang="en"> <head> <meta charset="utf-8"> <title>My Page</title> <!-- Link to your CSS file in the same folder --> <link rel="stylesheet" href="styles.css"> </head> <body> <!-- Panel --> <section class="panel"> <header class="panel-header"> <h2>Paste a Job Description below</h2> <div class="or"><span>OR</span></div> <h2>Use a sample job description</h2> </header>
-    <div class="panel-body">
-  <!-- Left: textarea -->
-  <div class="left">
-    <label class="sr-only" for="jd">Job Description</label>
-    <textarea id="jd" placeholder="Job Description..."></textarea>
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resume Scanner — AI Match</title>
+
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome (icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary:#1DA1F2;
+      --accent:#00C853;
+      --danger:#FF5252;
+      --warning:#FFC107;
+      --bg:#ffffff;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --border:#E6E8EC;
+      --shadow:0 2px 8px rgba(0,0,0,0.06);
+      --radius:8px;
+      --spacing:8px;
+      --focus: 0 0 0 3px rgba(29,161,242,0.35);
+    }
+    [data-theme="dark"] {
+      --bg:#0f141a;
+      --card:#15202b;
+      --text:#e6edf3;
+      --muted:#9aa6b2;
+      --border:#22303c;
+      --shadow:0 2px 8px rgba(0,0,0,0.4);
+    }
+    * { box-sizing: border-box; }
+    html,body { height:100%; }
+    body {
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:var(--bg);
+      line-height:1.45;
+    }
+    a { color:var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width:1120px; margin:0 auto; padding:24px; }
+    .card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px; height:44px; padding:0 16px; border-radius:10px; border:1px solid transparent;
+      font-weight:600; cursor:pointer; transition:.2s ease;
+    }
+    .btn:focus-visible { outline:none; box-shadow: var(--focus); }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-primary:hover { filter:brightness(0.95); }
+    .btn-secondary { background:transparent; color:var(--primary); border-color:var(--primary); }
+    .btn-ghost { background:transparent; color:var(--muted); }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .btn-success { background:var(--accent); color:#fff; }
+    .muted { color:var(--muted); }
+    .row { display:flex; gap:24px; }
+    .col { flex:1; }
+    .hidden { display:none !important; }
+
+    /* Top Nav */
+    .topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 24px; border-bottom:1px solid var(--border);
+    }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:700; }
+    .brand-badge {
+      width:32px; height:32px; border-radius:8px; display:grid; place-items:center;
+      background:var(--primary); color:white; font-weight:800;
+    }
+
+    /* Stepper */
+    .stepper {
+      display:flex; align-items:center; justify-content:center; gap:16px; margin:24px 0;
+    }
+    .step {
+      display:flex; align-items:center; gap:10px;
+    }
+    .step .circle {
+      width:32px; height:32px; border-radius:50%;
+      display:grid; place-items:center; font-weight:700;
+      border:2px solid var(--primary); color:var(--primary); background:transparent;
+    }
+    .step.active .circle { background:var(--primary); color:#fff; }
+    .step .label { font-weight:600; color:var(--muted); }
+    .step.active .label { color:var(--text); }
+    .step-line { flex:0 0 64px; height:2px; background:var(--border); }
+    .step.active + .step-line { background:var(--primary); }
+
+    /* Hero */
+    .hero {
+      display:grid; grid-template-columns: 1.15fr 0.85fr; gap:24px; align-items:center;
+      margin-top:16px;
+    }
+    .hero h1 { font-size:32px; line-height:1.2; margin:0 0 12px; }
+    .hero p { margin:0 0 16px; color:var(--muted); }
+    .mock {
+      border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow);
+      background:var(--card); padding:16px;
+    }
+
+    /* Dropzone */
+    .dropzone {
+      border:2px dashed var(--border); border-radius:12px; padding:40px; text-align:center;
+      background:transparent; color:var(--muted);
+    }
+    .dropzone.dragover { border-color: var(--primary); background: rgba(29,161,242,0.06); }
+    .dz-actions { margin-top:12px; display:flex; flex-direction:column; gap:6px; align-items:center; }
+
+    /* Text areas and inputs */
+    textarea, input[type="text"], input[type="url"] {
+      width:100%; padding:12px 14px; border:1px solid var(--border);
+      border-radius:10px; background:transparent; color:var(--text);
+      font:inherit; resize:vertical; min-height:120px;
+    }
+    input[type="text"], input[type="url"] { min-height:auto; }
+    textarea:focus, input:focus { outline:none; box-shadow: var(--focus); border-color: var(--primary); }
+
+    .card-header {
+      padding:16px 16px 0 16px; font-weight:700; font-size:18px;
+    }
+    .card-body { padding:16px; }
+
+    /* Results layout */
+    .results-layout { display:grid; grid-template-columns: 280px 1fr; gap:24px; }
+    .sidebar { position:sticky; top:16px; display:flex; flex-direction:column; gap:16px; }
+    .mini-bars { display:flex; flex-direction:column; gap:12px; }
+    .mini-bar { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .mini-bar .label { font-weight:600; }
+    .progress {
+      width:120px; height:6px; background:var(--border); border-radius:999px; overflow:hidden;
+    }
+    .progress > span { display:block; height:100%; background:var(--accent); width:40%; }
+    .issues { font-size:12px; color:var(--muted); }
+
+    /* Gauge */
+    .gauge {
+      width:100%; padding:16px; display:grid; justify-items:center; text-align:center;
+    }
+    .gauge-ring {
+      --size: 160px;
+      width:var(--size); height:var(--size); border-radius:50%;
+      background:
+        conic-gradient(var(--gauge-color) var(--gauge-deg), #e5e7eb 0deg);
+      display:grid; place-items:center;
+    }
+    [data-theme="dark"] .gauge-ring { background:
+        conic-gradient(var(--gauge-color) var(--gauge-deg), #2b3743 0deg); }
+    .gauge-inner {
+      width: calc(var(--size) - 24px); height: calc(var(--size) - 24px);
+      border-radius:50%; background:var(--card); display:grid; place-items:center;
+      border:1px solid var(--border);
+    }
+    .gauge-score { font-size:28px; font-weight:800; }
+    .gauge-label { margin-top:6px; font-weight:700; }
+    .gauge-state { font-size:12px; color:var(--muted); }
+
+    /* Results main */
+    .results-header {
+      display:flex; justify-content:space-between; align-items:center; padding:16px;
+      border-bottom:1px solid var(--border);
+    }
+    .results-title { display:flex; align-items:center; gap:10px; font-weight:700; }
+    .pill { background:#ffe7e7; color:#b00020; padding:4px 8px; border-radius:999px; font-size:12px; border:1px solid #ffcccc; }
+    [data-theme="dark"] .pill { background:#4c2525; color:#ffdada; border-color:#7d4a4a; }
+
+    .results-actions { display:flex; gap:8px; }
+    .tip-line { padding:10px 16px; border-bottom:1px solid var(--border); color:var(--muted); font-size:14px; }
+
+    .checklist { padding:8px 0; }
+    .row-item {
+      display:grid; grid-template-columns: 220px 28px 1fr 120px; gap:12px; align-items:center;
+      padding:10px 16px; border-bottom:1px solid var(--border);
+    }
+    .row-item .name { font-weight:600; }
+    .status-dot { font-size:16px; }
+    .status-ok { color:var(--accent); }
+    .status-err { color:var(--danger); }
+    .status-na { color:var(--muted); }
+    .row-actions a { color:var(--primary); font-size:13px; }
+
+    /* Footer help */
+    .help { position:fixed; left:16px; bottom:16px; background:var(--card); border:1px solid var(--border);
+      box-shadow:var(--shadow); border-radius:999px; padding:8px 12px; font-size:14px; }
+    .help a { text-decoration:none; }
+
+    /* Responsive */
+    @media (max-width: 980px) {
+      .hero { grid-template-columns:1fr; }
+      .results-layout { grid-template-columns: 1fr; }
+      .sidebar { position:static; }
+      .row-item { grid-template-columns: 160px 24px 1fr; }
+      .row-actions { display:none; }
+    }
+
+    /* Focus visible for interactive elements */
+    button, [role="button"], input, textarea, a { outline-offset:2px; }
+  </style>
+</head>
+<body>
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-badge">RS</div>
+      Resume Scanner
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="btn btn-secondary" id="toggleTheme" aria-label="Toggle dark mode">
+        <i class="fa-regular fa-moon"></i> Theme
+      </button>
+      <a class="btn btn-primary" href="#step1"><i class="fa-solid fa-magnifying-glass"></i> Scan For Free</a>
+    </div>
   </div>
 
-  <!-- Right: sample list -->
-  <aside class="right" aria-label="Sample job descriptions">
-    <ul class="sample-list">
-      <li>Developer</li>
-      <li>Ruby on Rails Developer</li>
-      <li>Accounting Manager</li>
-      <li>Accounts Payable Manager</li>
-      <li>Accounting Supervisor</li>
-      <li>Audit Manager</li>
-      <li>Controller</li>
-      <li>Finance Director</li>
-      <li>Data Analyst</li>
-      <li>Product Manager</li>
-      <li>UI/UX Designer</li>
-      <li>DevOps Engineer</li>
-      <li>QA Engineer</li>
-      <li>Marketing Manager</li>
-      <li>Sales Manager</li>
-      <li>Customer Success Manager</li>
-      <li>HR Generalist</li>
-      <li>Project Manager</li>
-      <li>Business Analyst</li>
-      <li>Operations Manager</li>
-    </ul>
-  </aside>
-</div>
+  <main class="container">
+    <!-- Optional Marketing Hero -->
+    <section id="hero" class="hero card">
+      <div class="card-body">
+        <h1>Optimize your resume to get more interviews</h1>
+        <p>Upload a resume, add a job description, and get an instant match score with targeted edits to boost your chances.</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <a class="btn btn-primary" href="#step1">Scan Your Resume For Free</a>
+          <a class="btn btn-secondary" href="#step1">Try a sample</a>
+        </div>
+        <p class="muted" style="margin-top:8px;">Private by default — files stay on your device until you choose to analyze.</p>
+      </div>
+      <div class="mock">
+        <div class="gauge" aria-label="Match rate preview">
+          <div class="gauge-ring" style="--gauge-deg:328deg; --gauge-color:#00C853">
+            <div class="gauge-inner">
+              <div>
+                <div class="gauge-score">91%</div>
+                <div class="gauge-label">High</div>
+                <div class="gauge-state">Match Rate</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mini-bars">
+          <div class="mini-bar">
+            <span class="label">Hard Skills</span>
+            <div class="progress" aria-hidden="true"><span style="width:80%"></span></div>
+          </div>
+          <div class="mini-bar">
+            <span class="label">Soft Skills</span>
+            <div class="progress"><span style="width:60%"></span></div>
+          </div>
+          <div class="mini-bar">
+            <span class="label">Formatting</span>
+            <div class="progress"><span style="width:90%"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-<div class="panel-footer">
-  <button class="btn btn-primary" type="button">Scan</button>
-</div>
-</section> </body> </html>
+    <!-- Stepper -->
+    <nav class="stepper" aria-label="Progress">
+      <div class="step active" data-step="1">
+        <div class="circle">1</div><div class="label">Upload Resume</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" data-step="2">
+        <div class="circle">2</div><div class="label">Add Job</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" data-step="3">
+        <div class="circle">3</div><div class="label">View Results</div>
+      </div>
+    </nav>
+
+    <!-- PAGE 1: Upload Resume -->
+    <section id="step1" class="card">
+      <div class="card-header">Upload Your Resume</div>
+      <div class="card-body">
+        <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Upload resume dropzone">
+          <i class="fa-regular fa-file-lines" style="font-size:28px;"></i>
+          <h3 style="margin:8px 0 0;">Upload your resume to get started</h3>
+          <div class="dz-actions">
+            <input type="file" id="resumeFile" accept=".pdf,.docx" class="hidden" />
+            <button id="resumeBtn" class="btn btn-primary" aria-label="Upload your resume">Upload your resume</button>
+            <button id="pasteResumeToggle" class="btn btn-ghost">Or paste resume text</button>
+            <div class="muted" style="font-size:13px;">We respect privacy — supported types: PDF, DOCX</div>
+          </div>
+        </div>
+
+        <div id="resumePasteWrap" class="hidden" style="margin-top:12px;">
+          <label for="resumeText" class="muted" style="display:block; margin-bottom:6px;">Paste Resume</label>
+          <textarea id="resumeText" placeholder="Paste your resume content here..."></textarea>
+          <div class="muted" style="display:flex; justify-content:space-between; margin-top:6px;">
+            <span id="resumeCharCount">0 characters</span>
+            <button class="btn btn-secondary" id="toStep2a">Next: Add Job</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 2: Add Job -->
+    <section id="step2" class="card hidden">
+      <div class="card-header">Add Job Details</div>
+      <div class="card-body">
+        <div class="row" style="flex-wrap:wrap;">
+          <div class="col">
+            <label for="jobText" class="muted" style="display:block; margin-bottom:6px;">Paste Job Description</label>
+            <textarea id="jobText" placeholder="Paste the job description here..." maxlength="12000"></textarea>
+            <div class="muted" id="jobChar" style="margin-top:6px;">0 / 12000</div>
+          </div>
+          <div class="col" style="max-width:460px;">
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label class="muted" for="jobTitle" style="display:block; margin-bottom:6px;">Job Title</label>
+                <input id="jobTitle" type="text" placeholder="e.g., Frontend Developer" />
+              </div>
+              <div>
+                <label class="muted" for="companyName" style="display:block; margin-bottom:6px;">Company Name</label>
+                <input id="companyName" type="text" placeholder="e.g., Acme Corp" />
+              </div>
+              <div>
+                <label class="muted" for="companySite" style="display:block; margin-bottom:6px;">Company Website</label>
+                <input id="companySite" type="url" placeholder="https://company.com" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+          <button id="backTo1" class="btn btn-ghost">Back</button>
+          <button id="scanBtn" class="btn btn-primary">
+            <i class="fa-solid fa-bolt"></i> Scan & Compare
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 3: Results -->
+    <section id="step3" class="results-layout hidden" aria-live="polite">
+      <!-- Left Sidebar -->
+      <aside class="sidebar">
+        <div class="card">
+          <div class="gauge" id="gauge" aria-label="Match rate" aria-live="polite">
+            <div id="gaugeRing" class="gauge-ring" style="--gauge-deg:0deg; --gauge-color:#FF5252">
+              <div class="gauge-inner">
+                <div>
+                  <div class="gauge-score" id="gaugeScore">0%</div>
+                  <div class="gauge-label" id="gaugeLabel">Low</div>
+                  <div class="gauge-state">Match Rate</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; justify-content:center; padding:0 16px 16px;">
+            <button class="btn btn-primary" id="rescan"><i class="fa-solid fa-upload"></i> Upload & rescan</button>
+            <button class="btn btn-secondary" id="powerEdit"><i class="fa-solid fa-bolt"></i> Power Edit</button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:16px;">
+          <div class="mini-bars" id="categoryBars">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Main -->
+      <section class="card">
+        <div class="results-header">
+          <div class="results-title">
+            <i class="fa-regular fa-clipboard"></i>
+            <span>Resume scan results</span>
+            <input id="jobNameEditable" type="text" style="border:none; background:transparent; font-weight:700; width:240px;" value="Target Role" aria-label="Edit job name" />
+            <span class="pill">IMPORTANT</span>
+          </div>
+          <div class="results-actions">
+            <button class="btn btn-secondary" id="track"><i class="fa-regular fa-bookmark"></i> Track</button>
+            <button class="btn btn-secondary" id="print"><i class="fa-solid fa-print"></i> Print</button>
+          </div>
+        </div>
+        <div class="tip-line">
+          Tip: Fix the red Xs to ensure your resume is easily searchable by recruiters and parsed correctly by the ATS.
+        </div>
+
+        <div class="checklist" id="checklist">
+          <!-- Rows injected by JS -->
+        </div>
+
+        <div style="padding:12px 16px;">
+          <h3 style="margin:8px 0;">Structured Output</h3>
+          <div id="structuredOutput" class="muted" style="white-space:pre-wrap;"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="help"><a href="#" id="guideMe"><i class="fa-regular fa-circle-question"></i> Guide me</a></div>
+
+  <script>
+    // Simple state
+    const state = {
+      resumeText: "",
+      jobText: "",
+      meta: { jobTitle:"", companyName:"", companySite:"" },
+      score: 0,
+      categories: [],
+      checklist: [],
+      structured: ""
+    };
+
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    // Theme toggle
+    $("#toggleTheme").addEventListener("click", () => {
+      const root = document.documentElement;
+      root.setAttribute("data-theme",
+        root.getAttribute("data-theme")==="dark" ? "light" : "dark"
+      );
+    });
+
+    // Stepper helpers
+    function setStep(n){
+      // Toggle sections
+      $("#step1").classList.toggle("hidden", n!==1);
+      $("#step2").classList.toggle("hidden", n!==2);
+      $("#step3").classList.toggle("hidden", n!==3);
+      // Stepper visuals
+      $$(".step").forEach(s => s.classList.remove("active"));
+      const active = $(`.step[data-step="${n}"]`);
+      if (active) active.classList.add("active");
+      // Scroll
+      window.location.hash = `step${n}`;
+      window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    // Dropzone logic
+    const dz = $("#dropzone");
+    const resumeFileInput = $("#resumeFile");
+
+    dz.addEventListener("click", () => resumeFileInput.click());
+    $("#resumeBtn").addEventListener("click", () => resumeFileInput.click());
+    dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("dragover"); });
+    dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+    dz.addEventListener("drop", async e => {
+      e.preventDefault(); dz.classList.remove("dragover");
+      if (!e.dataTransfer.files.length) return;
+      await handleResumeFile(e.dataTransfer.files[0]);
+    });
+    resumeFileInput.addEventListener("change", async e => {
+      if (e.target.files[0]) await handleResumeFile(e.target.files[0]);
+    });
+
+    async function handleResumeFile(file){
+      const allowed = ["application/pdf",
+                       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+      if (!allowed.includes(file.type) && !file.name.endsWith(".pdf") && !file.name.endsWith(".docx")) {
+        alert("Please upload a PDF or DOCX file.");
+        return;
+      }
+      // For demo, we don't parse files client-side; backend should extract text.
+      state.resumeText = `[Uploaded file: ${file.name}]`;
+      $("#resumePasteWrap").classList.add("hidden");
+      setStep(2);
+    }
+
+    // Paste resume
+    $("#pasteResumeToggle").addEventListener("click", () => {
+      $("#resumePasteWrap").classList.toggle("hidden");
+      $("#resumeText").focus();
+    });
+    $("#resumeText").addEventListener("input", e => {
+      state.resumeText = e.target.value;
+      $("#resumeCharCount").textContent = `${state.resumeText.length} characters`;
+    });
+    $("#toStep2a").addEventListener("click", () => {
+      if (!state.resumeText.trim()) {
+        alert("Please paste your resume text first.");
+        return;
+      }
+      setStep(2);
+    });
+
+    // Step 2 handlers
+    $("#jobText").addEventListener("input", e => {
+      state.jobText = e.target.value;
+      $("#jobChar").textContent = `${state.jobText.length} / 12000`;
+    });
+    $("#jobTitle").addEventListener("input", e => state.meta.jobTitle = e.target.value);
+    $("#companyName").addEventListener("input", e => state.meta.companyName = e.target.value);
+    $("#companySite").addEventListener("input", e => state.meta.companySite = e.target.value);
+
+    $("#backTo1").addEventListener("click", () => setStep(1));
+
+    // Simulated analyze (replace with backend call)
+    const API_URL = ""; // e.g., "http://localhost:8000/analyze"
+    $("#scanBtn").addEventListener("click", async () => {
+      if (!state.resumeText.trim() || !state.jobText.trim()) {
+        alert("Both Resume and Job Description are required.");
+        return;
+      }
+      setStep(3);
+
+      // If you have a backend, uncomment below and remove mockAnalyze().
+      // const res = await fetch(API_URL, {
+      //   method:"POST",
+      //   headers:{ "Content-Type":"application/json" },
+      //   body: JSON.stringify({
+      //     resume: state.resumeText,
+      //     job_description: state.jobText,
+      //     meta: state.meta
+      //   })
+      // });
+      // const data = await res.json();
+      // renderResults(data);
+
+      const data = mockAnalyze(state.resumeText, state.jobText, state.meta);
+      renderResults(data);
+    });
+
+    function mockAnalyze(resume, job, meta){
+      // Simple heuristic for demo: overlap keywords; DO NOT use in production.
+      const kw = (s) => new Set((s||"").toLowerCase().match(/[a-z0-9+.#]+/g) || []);
+      const r = kw(resume), j = kw(job);
+      let overlap = 0; j.forEach(k => { if (r.has(k)) overlap++; });
+      const denom = Math.max(1, j.size);
+      const raw = Math.round((overlap/denom)*100);
+
+      // Apply your rubric weights (mocked):
+      const score = Math.min(100, Math.max(0, Math.round(
+        0.35*raw + 0.25*raw + 0.15*raw + 0.10*raw + 0.10*raw + 0.05*raw
+      )));
+
+      const label = score>=80 ? "High" : score>=55 ? "Medium" : "Low";
+      const color = score>=80 ? "#00C853" : score>=55 ? "#FFC107" : "#FF5252";
+      const deg = Math.round(360 * (score/100));
+
+      // Category estimates (mock values)
+      const categories = [
+        {name:"Searchability", issues: score<85?2:0, progress: Math.min(100, score)},
+        {name:"Hard Skills", issues: score<90?3:1, progress: Math.max(30, score-5)},
+        {name:"Soft Skills", issues: 2, progress: Math.max(25, score-15)},
+        {name:"Recruiter Tips", issues: 1, progress: Math.max(20, score-10)},
+        {name:"Formatting", issues: score<95?1:0, progress: Math.max(40, score-5)},
+      ];
+
+      const checklist = [
+        {name:"ATS Tip", status:"err", text:"Use standard section headings (Experience, Education, Skills) and avoid tables/columns where possible."},
+        {name:"Contact Information", status:"ok", text:"Email found; add city/region for location relevance if missing."},
+        {name:"Summary", status:"err", text:"Add a concise summary tailored to the target role with 2–3 role keywords."},
+        {name:"Section Headings", status:"ok", text:"Headings appear standard and parseable."},
+        {name:"Job Title Match", status:"err", text:"Align current/target title wording to match the job posting phrasing."},
+        {name:"Date Formatting", status:"ok", text:"Dates appear consistent (MMM YYYY–MMM YYYY)."},
+        {name:"Experience", status:"err", text:"Quantify achievements with metrics (impact, scale, frequency)."},
+        {name:"Skills Coverage", status:"err", text:"Add missing keywords from the job description where you have real experience."},
+      ];
+
+      // Structured output format as requested
+      const structured =
+        `Match Score: ${score}%\n` +
+        `Key Strengths:\n- Clear role alignment keywords present\n- Core skills partially matched\n- Standard headings ease ATS parsing\n` +
+        `Gaps to Address:\n- Missing high-impact hard skills\n- Summary not tailored to role\n- Achievements lack quantification\n- Job title phrasing misaligned\n` +
+        `Suggested Edits:\n- Add missing keywords you truly have\n- Rewrite summary with 2–3 target terms\n- Quantify results (e.g., “reduced time by 30%”)\n- Mirror job title phrasing where accurate\n` +
+        `Optional ATS Tips:\n- Use PDF or DOCX with simple layout\n- Avoid graphics/columns; prefer bullets\n`;
+
+      return {
+        score, label, color, deg, categories, checklist, structured
+      };
+    }
+
+    function renderResults(data){
+      // Gauge
+      const ring = $("#gaugeRing");
+      ring.style.setProperty("--gauge-deg", `${data.deg}deg`);
+      ring.style.setProperty("--gauge-color", data.color);
+      $("#gaugeScore").textContent = `${data.score}%`;
+      $("#gaugeLabel").textContent = data.label;
+      $("#gauge").setAttribute("aria-label", `Match rate ${data.score}%, ${data.label}`);
+
+      // Category bars
+      const catHTML = data.categories.map(c => `
+        <div class="mini-bar">
+          <span class="label">${c.name}</span>
+          <div class="progress" role="progressbar" aria-valuenow="${c.progress}" aria-valuemin="0" aria-valuemax="100">
+            <span style="width:${c.progress}%"></span>
+          </div>
+          <span class="issues">${c.issues} issues to fix</span>
+        </div>
+      `).join("");
+      $("#categoryBars").innerHTML = catHTML;
+
+      // Checklist
+      const icon = (s) => s==="ok" ? `<i class="fa-regular fa-circle-check status-dot status-ok" title="Good"></i>`
+                     : s==="err" ? `<i class="fa-regular fa-circle-xmark status-dot status-err" title="Issue"></i>`
+                     : `<i class="fa-regular fa-circle status-dot status-na" title="Not evaluated"></i>`;
+      const rows = data.checklist.map(r => `
+        <div class="row-item">
+          <div class="name">${r.name}</div>
+          <div>${icon(r.status)}</div>
+          <div class="desc">${r.text}</div>
+          <div class="row-actions"><a href="#" class="update-link">Update scan information</a></div>
+        </div>
+      `).join("");
+      $("#checklist").innerHTML = rows;
+
+      // Structured output block
+      $("#structuredOutput").textContent = data.structured;
+    }
+
+    // Actions
+    $("#rescan").addEventListener("click", () => setStep(1));
+    $("#powerEdit").addEventListener("click", (e) => {
+      e.preventDefault();
+      alert("Power Edit lets you apply suggested phrasing inline. (Hook this to your editor view.)");
+    });
+
+    // Guide me
+    $("#guideMe").addEventListener("click", (e) => {
+      e.preventDefault();
+      alert("1) Upload or paste your resume.\n2) Add the job description.\n3) Review your match score and fix red items.\nUse Power Edit to apply suggestions quickly.");
+    });
+
+    // Print
+    $("#print").addEventListener("click", () => window.print());
+
+    // Deep link handling
+    if (location.hash==="#step2") setStep(2);
+    else if (location.hash==="#step3") setStep(3);
+    else setStep(1);
+  </script>
+</body>
+</html>
