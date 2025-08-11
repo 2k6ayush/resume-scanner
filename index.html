@@ -20,6 +20,7 @@
       --warning:#FFC107;
       --bg:#ffffff;
       --card:#ffffff;
+
       --text:#1f2937;
       --muted:#6b7280;
       --border:#E6E8EC;
@@ -501,7 +502,7 @@
     $("#backTo1").addEventListener("click", () => setStep(1));
 
     // Simulated analyze (replace with backend call)
-    const API_URL = ""; // e.g., "http://localhost:8000/analyze"
+    const API_URL = "http://localhost:8000/analyze"; 
     $("#scanBtn").addEventListener("click", async () => {
       if (!state.resumeText.trim() || !state.jobText.trim()) {
         alert("Both Resume and Job Description are required.");
@@ -510,19 +511,19 @@
       setStep(3);
 
       // If you have a backend, uncomment below and remove mockAnalyze().
-      // const res = await fetch(API_URL, {
-      //   method:"POST",
-      //   headers:{ "Content-Type":"application/json" },
-      //   body: JSON.stringify({
-      //     resume: state.resumeText,
-      //     job_description: state.jobText,
-      //     meta: state.meta
-      //   })
-      // });
-      // const data = await res.json();
-      // renderResults(data);
+       const res = await fetch(API_URL, {
+         method:"POST",
+         headers:{ "Content-Type":"application/json" },
+         body: JSON.stringify({
+           resume: state.resumeText,
+           job_description: state.jobText,
+           meta: state.meta
+         })
+       });
+       const data = await res.json();
+       renderResults(data);
 
-      const data = mockAnalyze(state.resumeText, state.jobText, state.meta);
+     // const data = mockAnalyze(state.resumeText, state.jobText, state.meta);
       renderResults(data);
     });
 

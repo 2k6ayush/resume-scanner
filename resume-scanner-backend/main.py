@@ -1,18 +1,18 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List, Literal
+from typing import List, Literal, Optional
 import re
 
 app = FastAPI()
 
 class Meta(BaseModel):
-    jobTitle: str | None = None
-    companyName: str | None = None
-    companySite: str | None = None
+    jobTitle: Optional[str] = None
+    companyName: Optional[str] = None
+    companySite: Optional[str] = None
 
 class ChecklistItem(BaseModel):
     name: str
-    status: Literal["ok","err","na"]
+    status: Literal["ok", "err", "na"]
     text: str
 
 class Category(BaseModel):
@@ -23,41 +23,54 @@ class Category(BaseModel):
 class AnalyzeIn(BaseModel):
     resume: str
     job_description: str
-    meta: Meta | None = None
+    meta: Optional[Meta] = None
 
 class AnalyzeOut(BaseModel):
     score: int
-    label: Literal["Low","Medium","High"]
+    label: Literal["Low", "Medium", "High"]
     categories: List[Category]
     checklist: List[ChecklistItem]
     structured: str
 
-def tokenize(s:str)->set[str]:
+def tokenize(s: str) -> set:
     return set(re.findall(r"[a-z0-9+.#]+", s.lower()))
 
 @app.post("/analyze", response_model=AnalyzeOut)
 def analyze(inp: AnalyzeIn):
     # Guardrails
     if not inp.resume.strip() or not inp.job_description.strip():
-        return AnalyzeOut(score=0,label="Low",categories=[],checklist=[],structured="Provide both Resume and Job Description to score.")
+        return AnalyzeOut(
+            score=0,
+            label="Low",
+            categories=[],
+            checklist=[],
+            structured="Provide both Resume and Job Description to score."
+        )
 
     r = tokenize(inp.resume)
     j = tokenize(inp.job_description)
     overlap = len([k for k in j if k in r])
     denom = max(1, len(j))
-    base = round((overlap/denom)*100)
+    base = round((overlap / denom) * 100)
 
-    # Example: plug in your rubric weights and richer signals
-    score = round(0.35*base + 0.25*base + 0.15*base + 0.10*base + 0.10*base + 0.05*base)
+    # Example rubric
+    score = round(
+        0.35 * base +
+        0.25 * base +
+        0.15 * base +
+        0.10 * base +
+        0.10 * base +
+        0.05 * base
+    )
     score = max(0, min(100, score))
-    label = "High" if score>=80 else "Medium" if score>=55 else "Low"
+    label = "High" if score >= 80 else "Medium" if score >= 55 else "Low"
 
     categories = [
-        Category(name="Searchability", issues=0 if score>85 else 2, progress=min(100, score)),
-        Category(name="Hard Skills", issues=1 if score>90 else 3, progress=max(30, score-5)),
-        Category(name="Soft Skills", issues=2, progress=max(25, score-15)),
-        Category(name="Recruiter Tips", issues=1, progress=max(20, score-10)),
-        Category(name="Formatting", issues=0 if score>95 else 1, progress=max(40, score-5)),
+        Category(name="Searchability", issues=0 if score > 85 else 2, progress=min(100, score)),
+        Category(name="Hard Skills", issues=1 if score > 90 else 3, progress=max(30, score - 5)),
+        Category(name="Soft Skills", issues=2, progress=max(25, score - 15)),
+        Category(name="Recruiter Tips", issues=1, progress=max(20, score - 10)),
+        Category(name="Formatting", issues=0 if score > 95 else 1, progress=max(40, score - 5)),
     ]
 
     checklist = [
@@ -80,5 +93,9 @@ def analyze(inp: AnalyzeIn):
     )
 
     return AnalyzeOut(
-        score=score, label=label, categories=categories, checklist=checklist, structured=structured
+        score=score,
+        label=label,
+        categories=categories,
+        checklist=checklist,
+        structured=structured
     )
