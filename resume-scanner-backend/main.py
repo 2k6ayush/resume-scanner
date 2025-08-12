@@ -2,8 +2,18 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List, Literal, Optional
 import re
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Enable CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change ["*"] to specific domains in production for security
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class Meta(BaseModel):
     jobTitle: Optional[str] = None
@@ -53,7 +63,7 @@ def analyze(inp: AnalyzeIn):
     denom = max(1, len(j))
     base = round((overlap / denom) * 100)
 
-    # Example rubric
+    # Example scoring rubric
     score = round(
         0.35 * base +
         0.25 * base +
